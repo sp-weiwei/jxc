@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thr.dao.OrderDao">
+
+    <resultMap id="OrderResult" type="Order">
+        <id property="id" column="id"></id>
+        <result property="orderNo" column="orderNo"></result>
+        <result property="goodsNum" column="goodsNum"></result>
+        <result property="unit" column="unit"></result>
+        <result property="price" column="price"></result>
+        <result property="sum" column="sum"></result>
+        <result property="orderDate" column="orderDate"></result>
+        <result property="address" column="address"></result>
+        <result property="remark" column="remark"></result>
+        <association property="customer" column="customerId" select="com.thr.dao.CustomerDao.findById"></association>
+        <association property="goods" column="goodsId" select="com.thr.dao.GoodsDao.findById"></association>
+    </resultMap>
+
+    <resultMap id="saleMonthResult" type="SaleMonth">
+        <result property="orderDate" column="orderDate"></result>
+        <result property="xiaoshou" column="xiaoshou"></result>
+        <result property="chengben" column="chengben"></result>
+        <result property="lirun" column="lirun"></result>
+    </resultMap>
+
+    <select id="list" parameterType="Map" resultMap="OrderResult">
+        select * from t_order
+         <where>
+              <if test="customerId!=null and customerId!=''">
+                  and customerId=#{customerId}
+              </if>
+         </where>
+        <if test="start!=null and size!=null">
+            limit #{start},#{size }
+        </if>
+    </select>
+
+    <select id="getTotal" parameterType="Map" resultType="Long">
+        select count(*) from t_order
+          <where>
+              <if test="customerId!=null and customerId!=''">
+                  and customerId=#{customerId}
+              </if>
+          </where>
+    </select>
+
+    <insert id="add" parameterType="order">
+        INSERT INTO t_order(id,orderNo,customerId,goodsId,goodsNum,unit,price,sum,orderDate,address,remark)
+        VALUES(null,#{orderNo},#{customer.id},#{goods.id},#{goodsNum},#{unit},#{price},#{goodsNum}*#{price},#{orderDate},#{address},#{remark});
+    </insert>
+
+    <delete id="delete" parameterType="Integer">
+        delete from t_order where id=#{id}
+    </delete>
+
+    <select id="getOrderByGoodsId" parameterType="Integer" resultType="Integer">
+        select count(*) from t_order where goodsId=#{id}
+    </select>
+
+    <select id="saleMonth" resultMap="saleMonthResult">
+        SELECT t1.orderDate as orderDate,
+        t1.goodsNum*t2.outPrice as xiaoshou,
+        t1.goodsNum*t2.inPrice as chengben,
+        t1.goodsNum*t2.outPrice-t1.goodsNum*t2.inPrice as lirun
+        from
+        t_order t1,t_goods t2
+        where DATE_SUB(CURDATE(),INTERVAL 1 MONTH) &lt;= DATE(orderDate) AND t1.goodsId=t2.id
+        GROUP BY orderDate
+        ORDER BY orderDate LIMIT 15
+    </select>
+</mapper> 

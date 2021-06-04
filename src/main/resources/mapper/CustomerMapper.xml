@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thr.dao.CustomerDao">
+
+    <resultMap id="CustomerResult" type="Customer">
+        <id property="id" column="id"></id>
+        <result property="customerNo" column="customerNo"></result>
+        <result property="name" column="name"></result>
+        <result property="area" column="area"></result>
+        <result property="myd" column="myd"></result>
+        <result property="address" column="address"></result>
+        <result property="phone" column="phone"></result>
+        <result property="remark" column="remark"></result>
+    </resultMap>
+
+    <select id="list" parameterType="Map" resultMap="CustomerResult">
+        select * from t_customer
+         <where>
+            <if test="name!=null and name!=''">
+                and name like #{name}
+            </if>
+             <if test="area!=null and area!=''">
+                 and area like #{area}
+             </if>
+         </where>
+        <if test="start!=null and size!=null">
+            limit #{start},#{size }
+        </if>
+    </select>
+
+    <select id="getTotal" parameterType="Map" resultType="Long">
+        select count(*) from t_customer
+          <where>
+              <if test="name!=null and name!=''">
+                  and name like #{name}
+              </if>
+              <if test="area!=null and area!=''">
+                  and area like #{area}
+              </if>
+          </where>
+    </select>
+
+    <insert id="add" parameterType="Customer">
+        insert INTO t_customer VALUES(null,#{customerNo},#{name},#{area},#{myd},#{address},#{phone},#{remark})
+    </insert>
+
+    <update id="update" parameterType="Customer">
+        update t_customer
+        <set>
+            <if test="customerNo!=null and customerNo!=''">
+                customerNo=#{customerNo},
+            </if>
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="area!=null and area!=''">
+                area=#{area},
+            </if>
+            <if test="myd!=null and myd!=''">
+                myd=#{myd},
+            </if>
+            <if test="address!=null and address!=''">
+                address=#{address},
+            </if>
+            <if test="phone!=null and phone!=''">
+                phone=#{phone},
+            </if>
+            <if test="remark!=null and remark!=''">
+                remark=#{remark},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="Integer">
+        delete from t_customer where id=#{id}
+    </delete>
+
+    <select id="findById" parameterType="Integer" resultType="Customer">
+        select * from t_customer where id=#{id}
+    </select>
+
+    <select id="findAll" resultMap="CustomerResult">
+        SELECT DISTINCT * FROM t_customer
+    </select>
+</mapper> 
